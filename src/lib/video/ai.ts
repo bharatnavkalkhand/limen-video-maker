@@ -46,7 +46,7 @@ const ScriptBody = z.object({
 const BriefInput = z.object({
   prompt: z.string().trim().min(8).max(600),
   look: z.enum(["cinema", "editorial", "essay", "graphic", "story"]),
-  length: z.enum(["short", "featurette", "reel"]),
+  length: z.enum(["short", "featurette", "reel", "five", "ten"]),
   aspect: z.enum(["16:9", "9:16", "1:1"]),
   voiceId: z.string().min(1).max(40),
 });
@@ -107,9 +107,26 @@ function toScenes(
 
 function directorPrompt(input: z.infer<typeof BriefInput>) {
   const scenes =
-    input.length === "short" ? 3 : input.length === "reel" ? 6 : 5;
-  const seconds =
-    input.length === "short" ? 20 : input.length === "reel" ? 50 : 35;
+  input.length === "short"
+    ? 3
+    : input.length === "featurette"
+      ? 5
+      : input.length === "reel"
+        ? 6
+        : input.length === "five"
+          ? 12
+          : 24;
+
+const seconds =
+  input.length === "short"
+    ? 20
+    : input.length === "featurette"
+      ? 35
+      : input.length === "reel"
+        ? 50
+        : input.length === "five"
+          ? 300
+          : 600;
   return `You are Lumen, a film director making a short voice-over film from a brief.
 
 Return ONLY valid JSON:
