@@ -196,12 +196,14 @@ export function CastPanel({ compact = false }: { compact?: boolean }) {
           ))}
           {phones.slice(0, 20).map((item) => (
             <Chip
-              key={item.uri}
-              active={voiceId === `dev:${item.uri}`}
-              onClick={() => setCast({ voiceId: `dev:${item.uri}` })}
-            >
-              {item.name}
-            </Chip>
+  key={item.uri}
+  active={voiceId === `dev:${item.uri}`}
+  onClick={() => setCast({ voiceId: `dev:${item.uri}` })}
+>
+  {item.lang.toLowerCase().startsWith("hi")
+    ? `Hindi · ${item.name}`
+    : item.name}
+</Chip>
           ))}
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2">
