@@ -27,15 +27,18 @@ function pickVoice(uri?: string) {
     if (match) return match;
   }
   return (
-    voices.find(
-      (voice) =>
-        voice.lang.toLowerCase().startsWith("en") &&
-        /google|samantha|daniel|karen|moira|female/i.test(voice.name),
-    ) ??
-    voices.find((voice) => voice.lang.toLowerCase().startsWith("en")) ??
-    voices[0] ??
-    null
-  );
+  voices.find((voice) =>
+    voice.lang.toLowerCase().startsWith("hi"),
+  ) ??
+  voices.find(
+    (voice) =>
+      voice.lang.toLowerCase().startsWith("en") &&
+      /google|samantha|daniel|karen|moira|female/i.test(voice.name),
+  ) ??
+  voices.find((voice) => voice.lang.toLowerCase().startsWith("en")) ??
+  voices[0] ??
+  null
+);
 }
 
 export function canSpeak() {
