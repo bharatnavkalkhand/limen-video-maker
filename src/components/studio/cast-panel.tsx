@@ -203,7 +203,7 @@ export function CastPanel({ compact = false }: { compact?: boolean }) {
   {item.lang.toLowerCase().startsWith("hi")
     ? `Hindi · ${item.name}`
     : item.name}
-</Chip>
+           </Chip>
           ))}
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2">
