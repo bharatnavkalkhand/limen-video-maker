@@ -11,9 +11,14 @@ function allVoices() {
 
 export function listDeviceVoices(): DeviceVoice[] {
   return allVoices()
-    .filter((voice) => voice.name && voice.voiceURI)
-    .slice(0, 30)
-    .map((voice) => ({
+  .filter((voice) => voice.name && voice.voiceURI)
+  .sort((a, b) => {
+    const aHindi = a.lang.toLowerCase().startsWith("hi");
+    const bHindi = b.lang.toLowerCase().startsWith("hi");
+    return Number(bHindi) - Number(aHindi);
+  })
+  .slice(0, 30)
+  .map((voice) => ({
       uri: voice.voiceURI,
       name: voice.name.replace(/^Google\s+/i, "").split(" - ")[0] ?? voice.name,
       lang: voice.lang,
