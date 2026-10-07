@@ -21,7 +21,7 @@ type Brief = {
 
 function wordDuration(text: string) {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
-  return Math.min(10, Math.max(4.5, words / 2.4 + 0.7));
+  return Math.min(45, Math.max(4.5, words / 2.4 + 0.7));
 }
 
 function splitBeats(text: string) {
@@ -83,7 +83,7 @@ export function draftLocalProject(brief: Brief, prior?: Project | null): Project
 
   const scenes: Scene[] = beats.map((beat, index) => {
     const previous = prior?.scenes[index];
-    const narration = beat.slice(0, 420);
+    const narration = beat.slice(0, 1200);
     return {
       id: previous?.id ?? (globalThis.crypto?.randomUUID?.() ?? `scene-${Date.now()}-${index}`),
       title: sceneTitle(beat, index),
@@ -121,7 +121,7 @@ export function reviseLocalProject(project: Project, note: string): Project {
       const words = narration.split(/\s+/);
       narration = words.slice(0, Math.max(8, Math.ceil(words.length * 0.7))).join(" ");
     } else if (hint.length < 120 && !/warm|science|cinematic/i.test(hint)) {
-      narration = `${narration.replace(/[.!?]+$/, "")}. ${hint}`.slice(0, 420);
+      narration = `${narration.replace(/[.!?]+$/, "")}. ${hint}`.slice(0, 1200);
     }
     return {
       ...scene,
