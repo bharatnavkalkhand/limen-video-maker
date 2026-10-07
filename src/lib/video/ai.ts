@@ -161,7 +161,7 @@ async function chatJson(user: string, model = CHAT_MODEL, retried = false): Prom
     body: JSON.stringify({
       model,
       temperature: 0.8,
-      max_tokens: 1600,
+      max_tokens: 5000,
       response_format: { type: "json_object" },
       messages: [
         {
