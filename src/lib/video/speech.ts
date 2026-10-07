@@ -12,7 +12,7 @@ function allVoices() {
 export function listDeviceVoices(): DeviceVoice[] {
   return allVoices()
     .filter((voice) => voice.name && voice.voiceURI)
-    .slice(0, 10)
+    .slice(0, 30)
     .map((voice) => ({
       uri: voice.voiceURI,
       name: voice.name.replace(/^Google\s+/i, "").split(" - ")[0] ?? voice.name,
