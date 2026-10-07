@@ -4,7 +4,7 @@ import { lookById, type AspectId, type LengthId, type LookId, type Scene } from 
 
 const CHAT_MODEL = "grok-4.5";
 const IMAGE_MODEL = "grok-imagine-image-2.0";
-const MAX_NARRATION = 420;
+const MAX_NARRATION = 1200;
 const MAX_VISUAL = 500;
 
 function apiKey() {
@@ -34,11 +34,9 @@ function extractJson(text: string) {
 
 const ScriptScene = z.object({
   title: z.string().min(1).max(80),
-  narration: z.string().min(1).max(800),
+  narration: narration: z.string().min(1).max(1200),
   visualPrompt: z.string().min(1).max(1200),
-  durationSec: z.number().min(3).max(12).optional(),
-});
-
+  durationSec: durationSec: z.number().min(3).max(45).optional(),
 const ScriptBody = z.object({
   title: z.string().min(1).max(80),
   logline: z.string().min(1).max(240),
