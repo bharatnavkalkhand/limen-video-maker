@@ -194,7 +194,7 @@ export function CastPanel({ compact = false }: { compact?: boolean }) {
               {item.name}
             </Chip>
           ))}
-          {phones.slice(0, 6).map((item) => (
+          {phones.slice(0, 20).map((item) => (
             <Chip
               key={item.uri}
               active={voiceId === `dev:${item.uri}`}
