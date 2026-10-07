@@ -35,6 +35,8 @@ export const LENGTHS = [
   { id: "short", label: "20s", sceneCount: 3, seconds: 20 },
   { id: "featurette", label: "35s", sceneCount: 5, seconds: 35 },
   { id: "reel", label: "50s", sceneCount: 6, seconds: 50 },
+  { id: "five", label: "5 min", sceneCount: 12, seconds: 300 },
+  { id: "ten", label: "10 min", sceneCount: 24, seconds: 600 },
 ] as const;
 
 export const ASPECTS = [
