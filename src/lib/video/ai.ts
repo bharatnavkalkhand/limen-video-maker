@@ -34,9 +34,9 @@ function extractJson(text: string) {
 
 const ScriptScene = z.object({
   title: z.string().min(1).max(80),
-  narration: narration: z.string().min(1).max(1200),
+  narration: z.string().min(1).max(1200),
   visualPrompt: z.string().min(1).max(1200),
-  durationSec: durationSec: z.number().min(3).max(45).optional(),
+ durationSec: z.number().min(3).max(45).optional(),
 const ScriptBody = z.object({
   title: z.string().min(1).max(80),
   logline: z.string().min(1).max(240),
