@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { DEMO_PROJECT } from "./demo";
 import { exportProject, shareOrDownload } from "./compositor";
-import { draftLocalProject, reviseLocalProject, STILLS } from "./local-script";
+import { generateSceneImage, generateSceneVoice, generateScript, reviseScript } from "./ai";
 import { cancelTake, startTake, stopTake } from "./record";
 import { speakLine, stopSpeaking, voiceUriFromId } from "./speech";
 import { VOICE_SAMPLE } from "./voices";
