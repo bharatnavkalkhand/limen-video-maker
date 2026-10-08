@@ -81,17 +81,6 @@ function patchScene(project: Project, id: string, patch: Partial<Scene>): Projec
   };
 }
 
-function withStills(project: Project): Project {
-  return {
-    ...project,
-    scenes: project.scenes.map((scene, index) => ({
-      ...scene,
-      imageUrl: scene.imageUrl || STILLS[index % STILLS.length],
-      status: "ready" as const,
-      error: undefined,
-    })),
-  };
-}
 
 export const useStudio = create<StudioState>((set, get) => ({
   stage: "compose",
@@ -253,48 +242,203 @@ export const useStudio = create<StudioState>((set, get) => ({
     });
   }
 },
-  applyNote: async (note) => {
-    const { project } = get();
+    applyNote: async (note) => {
+    const { project, brief } = get();
+
     if (!project) return;
-    set({ writingNote: "Revising the cut", error: null });
-    const next = reviseLocalProject(project, note);
+
     set({
-      stage: "script",
-      project: next,
-      selectedId: next.scenes[0]?.id ?? null,
+      writingNote: "Grok is revising the cut...",
+      error: null,
     });
+
+    try {
+      const result = await reviseScript({
+        data: {
+          note,
+          look: brief.look,
+          aspect: brief.aspect,
+          script: {
+            title: project.title,
+            logline: project.logline,
+            scenes: project.scenes,
+          },
+        },
+      });
+
+      const nextProject: Project = {
+        ...project,
+        title: result.title,
+        logline: result.logline,
+        scenes: result.scenes,
+      };
+
+      set({
+        stage: "script",
+        project: nextProject,
+        selectedId: nextProject.scenes[0]?.id ?? null,
+        writingNote: "",
+      });
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Could not revise the script.",
+        writingNote: "",
+      });
+    }
   },
 
-  produce: async () => {
+      produce: async () => {
     const { project } = get();
+
     if (!project) return;
+
     stopSpeaking();
-    set({ stage: "producing", error: null, playing: false, producingLabel: "Laying stills" });
-    await new Promise((resolve) => setTimeout(resolve, 220));
-    const next = withStills(get().project ?? project);
+
     set({
-      project: next,
-      stage: "studio",
-      producingLabel: "",
-      selectedId: next.scenes[0]?.id ?? null,
-      playhead: 0,
+      stage: "producing",
+      error: null,
+      playing: false,
+      producingLabel: "Generating AI images and voices...",
     });
+
+    try {
+      const scenes = [...project.scenes];
+
+      for (let index = 0; index < scenes.length; index++) {
+        const scene = scenes[index];
+
+        // 1. Generate AI image
+        set({
+          producingLabel: `Generating image ${index + 1} of ${scenes.length}...`,
+        });
+
+        const imageResult = await generateSceneImage({
+          data: {
+            visualPrompt: scene.visualPrompt,
+            look: project.look,
+            aspect: project.aspect,
+          },
+        });
+
+        if (!imageResult.ok) {
+          throw new Error(imageResult.error);
+        }
+
+        // Save image immediately
+        set((state) => ({
+          project: state.project
+            ? patchScene(state.project, scene.id, {
+                imageUrl: imageResult.imageUrl,
+                status: "ready",
+                error: undefined,
+              })
+            : state.project,
+        }));
+
+        // 2. Generate AI voice
+        if (
+          project.voiceId &&
+          project.voiceId !== "device" &&
+          scene.narration.trim()
+        ) {
+          set({
+            producingLabel: `Generating voice ${index + 1} of ${scenes.length}...`,
+          });
+
+          const voiceResult = await generateSceneVoice({
+            data: {
+              text: scene.narration,
+              voiceId: project.voiceId,
+            },
+          });
+
+          if (!voiceResult.ok) {
+            throw new Error(voiceResult.error);
+          }
+
+          // Save voice immediately
+          set((state) => ({
+            project: state.project
+              ? patchScene(state.project, scene.id, {
+                  audioUrl: voiceResult.audioUrl,
+                  status: "ready",
+                  error: undefined,
+                })
+              : state.project,
+          }));
+        }
+      }
+
+      const next = get().project ?? project;
+
+      set({
+        project: next,
+        stage: "studio",
+        producingLabel: "",
+        selectedId: next.scenes[0]?.id ?? null,
+        playhead: 0,
+      });
+    } catch (error) {
+      set({
+        stage: "script",
+        producingLabel: "",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Could not generate the scene images and voices.",
+      });
+    }
   },
 
-  retryScene: async (id) => {
+    retryScene: async (id) => {
     const { project } = get();
+
     if (!project) return;
-    const index = project.scenes.findIndex((item) => item.id === id);
-    if (index < 0) return;
-    set((s) => ({
-      project: s.project
-        ? patchScene(s.project, id, {
-            imageUrl: STILLS[index % STILLS.length],
-            status: "ready",
-            error: undefined,
-          })
-        : s.project,
-    }));
+
+    const scene = project.scenes.find((item) => item.id === id);
+
+    if (!scene) return;
+
+    set({
+      error: null,
+      producingLabel: "Regenerating image...",
+    });
+
+    try {
+      const result = await generateSceneImage({
+        data: {
+          visualPrompt: scene.visualPrompt,
+          look: project.look,
+          aspect: project.aspect,
+        },
+      });
+
+      if (!result.ok) {
+        throw new Error(result.error);
+      }
+
+      set((state) => ({
+        project: state.project
+          ? patchScene(state.project, id, {
+              imageUrl: result.imageUrl,
+              status: "ready",
+              error: undefined,
+            })
+          : state.project,
+        producingLabel: "",
+      }));
+    } catch (error) {
+      set({
+        producingLabel: "",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Could not regenerate this image.",
+      });
+    }
   },
 
   setPlaying: (playing) => set({ playing }),
