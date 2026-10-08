@@ -157,14 +157,52 @@ export const useStudio = create<StudioState>((set, get) => ({
     });
   },
 
-  writeScript: async () => {
-  const { brief } = get();
+   writeScript: async () => {
+    const { brief } = get();
 
-  if (brief.prompt.trim().length < 8) {
-    set({ error: "Give the director a little more to work with." });
-    return;
-  }
+    if (brief.prompt.trim().length < 8) {
+      set({ error: "Give the director a little more to work with." });
+      return;
+    }
 
+    set({
+      stage: "writing",
+      error: null,
+      writingNote: "Grok is writing your script...",
+    });
+
+    try {
+      const result = await generateScript({
+        data: {
+          prompt: brief.prompt,
+          look: brief.look,
+          length: brief.length,
+          aspect: brief.aspect,
+          voiceId: brief.voiceId,
+        },
+      });
+
+      const project = result.project;
+
+      set({
+        stage: "script",
+        project,
+        selectedId: project.scenes[0]?.id ?? null,
+        playhead: 0,
+        playing: false,
+        writingNote: "",
+      });
+    } catch (error) {
+      set({
+        stage: "compose",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Script generation failed.",
+        writingNote: "",
+      });
+    }
+  },
   set({
     stage: "writing",
     error: null,
