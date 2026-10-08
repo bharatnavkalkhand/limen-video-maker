@@ -158,27 +158,63 @@ export const useStudio = create<StudioState>((set, get) => ({
   },
 
   writeScript: async () => {
-    const { brief } = get();
-    if (brief.prompt.trim().length < 8) {
-      set({ error: "Give the director a little more to work with." });
-      return;
-    }
-    set({ stage: "writing", error: null, writingNote: "Reading the brief" });
-    await new Promise((resolve) => setTimeout(resolve, 280));
-    if (get().stage !== "writing") return;
-    set({ writingNote: "Cutting scenes" });
-    await new Promise((resolve) => setTimeout(resolve, 280));
-    if (get().stage !== "writing") return;
-    const project = draftLocalProject(brief);
+  const { brief } = get();
+
+  if (brief.prompt.trim().length < 8) {
+    set({ error: "Give the director a little more to work with." });
+    return;
+  }
+
+  set({
+    stage: "writing",
+    error: null,
+    writingNote: "Grok is writing your script...",
+  });
+
+  try {
+    const result = await generateScript({
+      data: {
+        prompt: brief.prompt,
+        look: brief.look,
+        length: brief.length,
+        aspect: brief.aspect,
+      },
+    });
+
+    const project: Project = {
+      id: crypto.randomUUID(),
+      title: result.title,
+      logline: result.logline,
+      prompt: brief.prompt,
+      look: brief.look,
+      length: brief.length,
+      aspect: brief.aspect,
+      voiceId: brief.voiceId,
+      avatarId: brief.avatarId,
+      avatarMode: brief.avatarMode,
+      customAvatarUrl: brief.customAvatarUrl,
+      scenes: result.scenes.map((scene) => ({
+        ...scene,
+        status: "idle",
+      })),
+    };
+
     set({
       stage: "script",
       project,
       selectedId: project.scenes[0]?.id ?? null,
       playhead: 0,
       playing: false,
+      writingNote: "",
     });
-  },
-
+  } catch (error) {
+    set({
+      stage: "compose",
+      error: error instanceof Error ? error.message : "Script generation failed.",
+      writingNote: "",
+    });
+  }
+},
   applyNote: async (note) => {
     const { project } = get();
     if (!project) return;
